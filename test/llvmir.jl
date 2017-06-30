@@ -15,7 +15,7 @@ module LLVMIRDebugger
   #include "llvm/IRReader/IRReader.h"
   #include "llvm/Support/MemoryBuffer.h"
   #include "llvm/IR/ModuleSlotTracker.h"
-  
+
   // This is a private LLVM header at the moment
   #include "lib/ExecutionEngine/Interpreter/Interpreter.h"
 
@@ -55,7 +55,7 @@ module LLVMIRDebugger
   function Base.parse(::Type{pcpp"llvm::Module"}, data)
       mod = icxx"""
       llvm::SMDiagnostic Err;
-      auto mod = 
+      auto mod =
         llvm::parseIR($(convert(vcpp"llvm::MemoryBufferRef", data)),
                       Err, jl_LLVMContext);
       if (!mod) {
@@ -145,12 +145,12 @@ module LLVMIRDebugger
       BB = icxx"$(frame.state.Interp)->ECStack[$(frame.idx)].CurBB;"
       "function $(getName(F)), BB $(getName(BB))"
   end
-  
+
   immutable AggregateValue
       values::Vector{Any}
   end
   Base.print(io::IO, val::AggregateValue) = print(io, val.values)
-  
+
   function fromGenericValue(typ::pcpp"llvm::Type", val::vcpp"llvm::GenericValue")
       if icxx"$typ->isVoidTy();"
           return nothing
@@ -164,7 +164,7 @@ module LLVMIRDebugger
       elseif icxx"$typ->isPointerTy();"
           return icxx"$val.PointerVal;"
       elseif icxx"$typ->isAggregateType();"
-          return AggregateValue(Any[fromGenericValue(x...) for x in 
+          return AggregateValue(Any[fromGenericValue(x...) for x in
             zip(icxx"$typ->subtypes();", icxx"$val.AggregateVal;")])
       elseif icxx"$typ->isIntegerTy();"
           # Good enough for now
@@ -173,7 +173,7 @@ module LLVMIRDebugger
           error("Unsupported type")
       end
   end
-  
+
   function DebuggerFramework.print_locals(io::IO, frame::LLVMIRFrame)
       MST = icxx"new llvm::ModuleSlotTracker{$(frame.state.M), true};"
       icxx"$MST->incorporateFunction(*$(CurFunction(frame)));"
@@ -187,7 +187,7 @@ module LLVMIRDebugger
       end
       icxx"delete $MST;"
   end
-  
+
   function update_stack!(ds, state)
       stacksize = Int(icxx"$(state.Interp)->ECStack.size();"-1)
       ds.stack = [LLVMIRFrame(state, i) for i = stacksize:-1:0]
@@ -195,7 +195,7 @@ module LLVMIRDebugger
           ds.level = length(ds.stack)
       end
   end
-    
+
   function DebuggerFramework.execute_command(state, frame::LLVMIRFrame, cmd::Val{:si}, command)
       step_one!(frame.state)
       update_stack!(state, frame.state)

@@ -15,10 +15,10 @@ reload("DebuggerFramework")
 
 module BrainStack
     using DebuggerFramework
-    immutable BrainStackAST
+    struct BrainStackAST
         stmts::Vector{Vector{Int}}
     end
-  
+
     function Base.parse(::Type{BrainStackAST}, data)
         BrainStackAST(map(enumerate(split(data, '\n', keep=false))) do args
             lineno, line = args
@@ -27,15 +27,15 @@ module BrainStack
             map(x->parse(Int,x), parts[2:end])
         end)
     end
-  
-    type BrainStackInterpreterState
+
+    mutable struct BrainStackInterpreterState
         ast::BrainStackAST
         stack::Vector{Tuple{Int, Int}}
         idx::Int
         pos::Int
         ncalls::Int
     end
-  
+
     # Helpfully split up the interpreter to be re-usable from the debugger below
     enter(ast::BrainStackAST) = BrainStackInterpreterState(ast, [(0,0)], 1, 1, 0)
     function step_one!(state::BrainStackInterpreterState)
@@ -58,20 +58,20 @@ module BrainStack
         while step_one!(state); end
         state.ncalls
     end
-  
-  
+
+
     # Debugger support
-    immutable BrainStackStackRef <: DebuggerFramework.StackFrame
+    struct BrainStackStackRef <: DebuggerFramework.StackFrame
         state::BrainStackInterpreterState
         idx::Int
     end
-  
+
     function DebuggerFramework.debug(ast::BrainStackAST, args...)
         state = enter(ast)
         stack = [BrainStackStackRef(state, 0)]
         DebuggerFramework.RunDebugger(stack, args...)
     end
-    
+
     function idxpos(frame)
         if frame.idx == 0
             idx, pos = frame.state.idx, frame.state.pos
@@ -80,7 +80,7 @@ module BrainStack
         end
         idx, pos
     end
-    
+
     function DebuggerFramework.print_status_synthtic(io::IO, state, frame::BrainStackStackRef, lines_before, total_lines)
         ast = frame.state.ast
         idx, pos = idxpos(frame)
@@ -93,17 +93,18 @@ module BrainStack
             end
             (opno != length(ast.stmts[idx])) && print(io, ' ')
        end
+       return 1
     end
-    
+
     DebuggerFramework.locdesc(frame::BrainStackStackRef) = "statement $(idxpos(frame)[1])"
-    
+
     function update_stack!(ds, state, stack)
         ds.stack = [BrainStackStackRef(state, i) for i = 0:length(stack)-1]
         if ds.level > length(ds.stack)
             ds.level = length(ds.stack)
         end
     end
-    
+
     function DebuggerFramework.execute_command(state, frame::BrainStackStackRef, cmd::Val{:si}, command)
         step_one!(frame.state)
         update_stack!(state, frame.state, frame.state.stack)
