@@ -127,5 +127,7 @@ const thisdir = dirname(@__FILE__)
 TerminalRegressionTests.automated_test(
                 joinpath(thisdir,"brainstack/simple.multiout"),
                ["si\n", "f 2\n", "si\n", "si\n", "\n", "\n"]) do emuterm
-    DebuggerFramework.debug(asta, emuterm)
+    repl = Base.REPL.LineEditREPL(emuterm, true)
+    repl.interface = Base.REPL.setup_interface(repl)
+    DebuggerFramework.debug(asta, repl, emuterm)
 end
