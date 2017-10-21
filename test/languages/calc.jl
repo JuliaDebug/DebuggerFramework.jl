@@ -48,7 +48,6 @@ mutable struct Lexer
     current_col::Int
 end
 Lexer(io::IO) = Lexer(io, '\0', IOBuffer(), 0, 0, 0)
-readchar(l::Lexer) = readchar(l.io)
 peekchar(l::Lexer) = peekchar(l.io)
 dpeekchar(l::Lexer) = dpeekchar(l.io)
 
@@ -281,7 +280,6 @@ macro propagate_error(p, x)
 end
 
 function emit_error(p::Parser, text)
-    @show text
     p.had_error = true
     return nothing
 end
@@ -345,6 +343,9 @@ end
 function parse_expr(p::Parser)
     lhs = @propagate_error p parse_operand(p)
     t = tok(p)
+    if p.saw_newline || tok(p).kind == ENDMARKER
+        return lhs
+    end
     if !is_op_kind(t.kind)
         return emit_error(p, "Invalid non-operator after LHS expression")
     end
@@ -355,7 +356,6 @@ end
 
 function parse_toplevel(p::Parser)
     expr = @propagate_error p parse_expr(p)
-    @show (p.saw_newline, tok(p))
     if !(p.saw_newline || tok(p) == ENDMARKER)
         return emit_error(p, "Extra token after the end of an expression")
     end
@@ -366,9 +366,7 @@ function parseall(data::String)
     p = Parser(IOBuffer(data))
     code = CalcExpr[]
     while !p.had_error && tok(p).kind != ENDMARKER
-        @show tok(p)
         expr = @propagate_error p parse_toplevel(p)
-        @show expr
         push!(code, expr)
     end
     ParsedSourceCode(data, code)
@@ -425,10 +423,13 @@ function _step!(s::InterpreterState)
         error("Unrecognized expression")
     end
     s.it = (it, ns)
-    return true
 end
 
 function step!(s::InterpreterState)
+    it, state = s.it
+    if !done(it, state)
+        _step!(s)
+    end
     it, state = s.it
     if done(it, state)
         if s.pc == length(s.code.parsed)
@@ -440,7 +441,7 @@ function step!(s::InterpreterState)
         push!(s.backrefs, s.valstack[end])
         empty!(s.valstack)
     end
-    _step!(s)
+    return true
 end
 
 # Debugger
@@ -455,10 +456,10 @@ function skip_literals!(s::InterpreterState)
     end
 end
 
-function DebuggerFramework.debug(code::ParsedSourceCode)
+function DebuggerFramework.debug(code::ParsedSourceCode, args...)
     s = enter(code)
     skip_literals!(s)
-    DebuggerFramework.RunDebugger([s])
+    DebuggerFramework.RunDebugger([s], args...)
 end
 
 DebuggerFramework.locdesc(s::InterpreterState) = "statement $(s.pc)"
@@ -508,6 +509,45 @@ function DebuggerFramework.execute_command(state, s::InterpreterState, cmd::Unio
         return true
     end
     return false
+end
+
+function DebuggerFramework.eval_code(state, s::InterpreterState, command)
+    p = Parser(IOBuffer(command))
+    expr = parse_expr(p)
+    ns = enter(ParsedSourceCode(command, CalcExpr[expr]))
+    ns.backrefs = copy(s.backrefs)
+    while step!(ns); end
+    ns.valstack[end]
+end
+
+using Base: REPL, LineEdit
+function DebuggerFramework.language_specific_prompt(state, frame::InterpreterState)
+    if haskey(state.language_modes, :calc)
+        return state.language_modes[:calc]
+    end
+    calc_prompt = LineEdit.Prompt(DebuggerFramework.promptname(state.level, "calc");
+        # Copy colors from the prompt object
+        prompt_prefix = state.repl.prompt_color,
+        prompt_suffix = (state.repl.envcolors ? Base.input_color : repl.input_color),
+        on_enter = Base.REPL.return_callback)
+    calc_prompt.hist = state.main_mode.hist
+    calc_prompt.hist.mode_mapping[:calc] = calc_prompt
+
+    calc_prompt.on_done = (s,buf,ok)->begin
+        if !ok
+            LineEdit.transition(s, :abort)
+            return false
+        end
+        xbuf = copy(buf)
+        command = String(take!(buf))
+        ok, result = DebuggerFramework.eval_code(state, command)
+        Base.REPL.print_response(state.repl, ok ? result : result[1], ok ? nothing : result[2], true, true)
+        println(state.repl.t)
+        LineEdit.reset_state(s)
+    end
+    calc_prompt.keymap_dict = LineEdit.keymap([Base.REPL.mode_keymap(state.main_mode);state.standard_keymap])
+    state.language_modes[:calc] = calc_prompt
+    return calc_prompt
 end
 
 end

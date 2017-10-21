@@ -110,23 +110,3 @@ module BrainStack
         return true
     end
 end
-
-proga = """
-1: 2 3 0
-2: 0
-3: 0
-"""
-
-asta = parse(BrainStack.BrainStackAST, proga)
-@test BrainStack.interpret(asta) == 2
-
-include(Pkg.dir("VT100","test","TerminalRegressionTests.jl"))
-
-const thisdir = dirname(@__FILE__)
-TerminalRegressionTests.automated_test(
-                joinpath(thisdir,"brainstack/simple.multiout"),
-               ["si\n", "f 2\n", "si\n", "si\n", "\n", "\n"]) do emuterm
-    repl = Base.REPL.LineEditREPL(emuterm, true)
-    repl.interface = Base.REPL.setup_interface(repl)
-    DebuggerFramework.debug(asta, repl, emuterm)
-end

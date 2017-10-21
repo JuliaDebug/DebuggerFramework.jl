@@ -1,0 +1,214 @@
+++++++++++++++++++++++++++++++++++++++++++++++++++
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 7 / 2
+|1|debug > 
+--------------------------------------------------
+|AAAAAAAAAAAAAA
+|BBCCCCCCCCCCCCCCCCC
+|DDCCCCCC
+|DDCCCCCCC
+|
+|CCCCCCCCCCCCCCCCCCC
+|EEEEEEEEEE
+++++++++++++++++++++++++++++++++++++++++++++++++++
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 7 / 2
+|1|debug > s
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 9 * 3.5
+|1|debug > s
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 1 + 31.5
+|1|debug > s
+|In statement 2
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|4 _1 / 3
+|
+|About to run: 32.5 * 2
+|1|debug > 
+--------------------------------------------------
+|AAAAAAAAAAAAAA
+|BBCCCCCCCCCCCCCCCCC
+|DDCCCCCC
+|DDCCCCCCC
+|
+|CCCCCCCCCCCCCCCCCCC
+|EEEEEEEEEEF
+|GGGGGGGGGGGGGG
+|HHIIIIIIIIIIIIIIIII
+|JJIIIIII
+|JJIIIIIII
+|
+|IIIIIIIIIIIIIIIIIIIII
+|EEEEEEEEEEF
+|GGGGGGGGGGGGGG
+|HHIIIIIIIIIIIIIIIII
+|JJIIIIII
+|JJIIIIIII
+|
+|IIIIIIIIIIIIIIIIIIIIII
+|EEEEEEEEEEF
+|GGGGGGGGGGGGGG
+|GGFFFFFFFFFFFFFFFFF
+|HHIIIIII
+|JJIIIIIII
+|JJIIIIII
+|
+|IIIIIIIIIIIIIIIIIIIIII
+|EEEEEEEEEE
+++++++++++++++++++++++++++++++++++++++++++++++++++
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 7 / 2
+|1|debug > s
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 9 * 3.5
+|1|debug > s
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 1 + 31.5
+|1|debug > s
+|In statement 2
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|4 _1 / 3
+|
+|About to run: 32.5 * 2
+|1|calc > _1
+|32.5
+|
+|1|debug > 
+--------------------------------------------------
+|AAAAAAAAAAAAAA
+|BBCCCCCCCCCCCCCCCCC
+|DDCCCCCC
+|DDCCCCCCC
+|
+|CCCCCCCCCCCCCCCCCCC
+|EEEEEEEEEEF
+|GGGGGGGGGGGGGG
+|HHIIIIIIIIIIIIIIIII
+|JJIIIIII
+|JJIIIIIII
+|
+|IIIIIIIIIIIIIIIIIIIII
+|EEEEEEEEEEF
+|GGGGGGGGGGGGGG
+|HHIIIIIIIIIIIIIIIII
+|JJIIIIII
+|JJIIIIIII
+|
+|IIIIIIIIIIIIIIIIIIIIII
+|EEEEEEEEEEF
+|GGGGGGGGGGGGGG
+|GGFFFFFFFFFFFFFFFFF
+|HHIIIIII
+|JJIIIIIII
+|JJIIIIII
+|
+|IIIIIIIIIIIIIIIIIIIIII
+|KKKKKKKKKII
+|IIII
+|
+|EEEEEEEEEE
+++++++++++++++++++++++++++++++++++++++++++++++++++
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 7 / 2
+|1|debug > s
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 9 * 3.5
+|1|debug > s
+|In statement 1
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|
+|About to run: 1 + 31.5
+|1|debug > s
+|In statement 2
+|1 1 + (9 * (7 / 2))
+|2 _1 * 2
+|3 _1 + _2
+|4 _1 / 3
+|
+|About to run: 32.5 * 2
+|1|calc > _1
+|32.5
+|
+|1|calc > _1
+|32.5
+|
+|1|calc > 
+--------------------------------------------------
+|AAAAAAAAAAAAAA
+|BBCCCCCCCCCCCCCCCCC
+|DDCCCCCC
+|DDCCCCCCC
+|
+|CCCCCCCCCCCCCCCCCCC
+|EEEEEEEEEEF
+|GGGGGGGGGGGGGG
+|HHIIIIIIIIIIIIIIIII
+|JJIIIIII
+|JJIIIIIII
+|
+|IIIIIIIIIIIIIIIIIIIII
+|EEEEEEEEEEF
+|GGGGGGGGGGGGGG
+|HHIIIIIIIIIIIIIIIII
+|JJIIIIII
+|JJIIIIIII
+|
+|IIIIIIIIIIIIIIIIIIIIII
+|EEEEEEEEEEF
+|GGGGGGGGGGGGGG
+|GGFFFFFFFFFFFFFFFFF
+|HHIIIIII
+|JJIIIIIII
+|JJIIIIII
+|
+|IIIIIIIIIIIIIIIIIIIIII
+|KKKKKKKKKII
+|IIII
+|
+|KKKKKKKKKII
+|IIII
+|
+|KKKKKKKKK
