@@ -1,6 +1,5 @@
 using Base.Test
 using DebuggerFramework
-reload("DebuggerFramework")
 
 # This file will define a minimalistic programming language and implement a
 # debugger for this language. The language is not supposed to be useful, it
