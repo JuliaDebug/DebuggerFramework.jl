@@ -24,7 +24,7 @@ module LLVMIRDebugger
 
   # Utils
   if !isdefined(:StartAtIterator)
-      immutable StartAtIterator{T,S}
+      struct StartAtIterator{T,S}
           it::T
           state::S
       end
@@ -35,7 +35,7 @@ module LLVMIRDebugger
   end
 
   # The interpreter
-  immutable ExecutionContext
+  struct ExecutionContext
       M::pcpp"llvm::Module"
       Interp::pcpp"llvm::Interpreter"
       ExecutionContext(M::pcpp"llvm::Module") = new(M,
@@ -97,7 +97,7 @@ module LLVMIRDebugger
   end
 
   # Debugger support
-  immutable LLVMIRFrame <: DebuggerFramework.StackFrame
+  struct LLVMIRFrame <: DebuggerFramework.StackFrame
       state::ExecutionContext
       idx::Int
   end
@@ -146,7 +146,7 @@ module LLVMIRDebugger
       "function $(getName(F)), BB $(getName(BB))"
   end
 
-  immutable AggregateValue
+  struct AggregateValue
       values::Vector{Any}
   end
   Base.print(io::IO, val::AggregateValue) = print(io, val.values)
