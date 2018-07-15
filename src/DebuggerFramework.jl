@@ -45,7 +45,7 @@ module DebuggerFramework
         end
     end
 
-    print_backtrace(state, _::Void) = nothing
+    print_backtrace(state, _::Nothing) = nothing
 
     function execute_command(state, frame, ::Val{:bt}, cmd)
         print_backtrace(state)
@@ -72,7 +72,7 @@ module DebuggerFramework
             new_level = parse(Int, subcmds[1])
             new_stack_idx = length(state.stack)-(new_level-1)
             if new_stack_idx > length(state.stack) || new_stack_idx < 1
-                print_with_color(:red, STDERR, "Not a valid frame index\n")
+                print_with_color(:red, stderr, "Not a valid frame index\n")
                 return false
             end
             state.level = new_level
@@ -187,7 +187,7 @@ module DebuggerFramework
             data = if isa(loc, BufferLocInfo)
                     loc.data
                 else
-                    VERSION < v"0.7" ? readstring(loc.filepath) :
+                    VERSION < v"0.7" ? read(loc.filepath, String) :
                     read(loc.filepath, String)
                 end
             print_sourcecode(outbuf, data,

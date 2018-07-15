@@ -1,6 +1,6 @@
 module Calc
 
-using Base.Test
+using Test
 using DebuggerFramework
 using AbstractTrees
 
@@ -36,7 +36,7 @@ struct Token
     kind::TokenKind
     startbyte::UInt
     endbyte::UInt
-    val::Union{Int, Void}
+    val::Union{Int, Nothing}
 end
 
 mutable struct Lexer
@@ -249,7 +249,7 @@ end
 
 mutable struct Parser
     l::Lexer
-    first_leading_ws::Union{Token, Void}
+    first_leading_ws::Union{Token, Nothing}
     saw_newline::Bool
     current_token::Token
     had_error::Bool
@@ -496,13 +496,13 @@ end
 function DebuggerFramework.execute_command(state, s::InterpreterState, cmd::Union{Val{:s},Val{:si}}, command)
     if cmd == Val{:si}()
         if !step!(s)
-            shift!(state.stack)
+            popfirst!(state.stack)
             return false
         end
         return true
     elseif cmd == Val{:s}()
         if !step!(s)
-            shift!(state.stack)
+            popfirst!(state.stack)
             return false
         end
         skip_literals!(s)

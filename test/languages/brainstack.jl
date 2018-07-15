@@ -1,4 +1,4 @@
-using Base.Test
+using Test
 using DebuggerFramework
 
 # This file will define a minimalistic programming language and implement a
