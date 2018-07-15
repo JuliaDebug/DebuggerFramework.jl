@@ -1,4 +1,4 @@
-using Base.Test
+using Test
 using DebuggerFramework
 
 # This file will define a minimalistic programming language and implement a
@@ -19,9 +19,9 @@ module BrainStack
     end
 
     function Base.parse(::Type{BrainStackAST}, data)
-        BrainStackAST(map(enumerate(split(data, '\n', keep=false))) do args
+        BrainStackAST(map(enumerate(split(data, '\n', keepempty=false))) do args
             lineno, line = args
-            parts = split(line, r"\s", keep=false)
+            parts = split(line, r"\s", keepempty=false)
             @assert parts[1] == "$lineno:"
             map(x->parse(Int,x), parts[2:end])
         end)
@@ -86,7 +86,7 @@ module BrainStack
         print(io, "$idx: ")
         for (opno, op) in enumerate(ast.stmts[idx])
             if opno == pos
-                print_with_color(:yellow, io, string(op); bold = true)
+                printstyled(io, string(op); bold = true, color=:yellow)
             else
                 print(io, op)
             end
