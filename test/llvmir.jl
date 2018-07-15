@@ -22,18 +22,6 @@ module LLVMIRDebugger
   extern llvm::LLVMContext jl_LLVMContext;
   """
 
-  # Utils
-  if !isdefined(:StartAtIterator)
-      struct StartAtIterator{T,S}
-          it::T
-          state::S
-      end
-      Base.start(it::StartAtIterator) = it.state
-      Base.next(it::StartAtIterator, state) = Base.next(it.it, state)
-      Base.done(it::StartAtIterator, state) = Base.done(it.it, state)
-      startat(it, state) = StartAtIterator(it, state)
-  end
-
   # The interpreter
   struct ExecutionContext
       M::pcpp"llvm::Module"
@@ -79,9 +67,8 @@ module LLVMIRDebugger
       """))
   end
 
-  Base.start(BB::pcpp"llvm::BasicBlock") = icxx"$BB->begin();"
-  Base.done(BB::pcpp"llvm::BasicBlock", i) = icxx"$i == $BB->end();"
-  Base.next(BB::pcpp"llvm::BasicBlock", i) = (icxx"*$i;", icxx"++$i;")
+  Base.iterate(BB::pcpp"llvm::BasicBlock", i=icxx"$BB->begin();") =
+    icxx"$i == $BB->end();" ? nothing : (icxx"*$i;", icxx"++$i;")
   prev(BB::pcpp"llvm::BasicBlock", i) = (icxx"*$i;", icxx"--$i;")
 
   function step_one!(state::ExecutionContext)
@@ -130,7 +117,7 @@ module LLVMIRDebugger
           cur_line += 1
           total_lines -= 1
       end
-      for inst in Base.Iterators.take(startat(CurBB(es), cur_it), 5)
+      for inst in Base.Iterators.take(Rest(CurBB(es), cur_it), 5)
           cur_line += 1
           if icxx"&$inst == &*$(CurInst(es));"
               active_line = cur_line

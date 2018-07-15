@@ -1,13 +1,14 @@
 using DebuggerFramework
 using Test
+using REPL
 
 include("languages/brainstack.jl")
 include("languages/calc.jl")
 
 function setup_repl(emuterm)
-    repl = Base.REPL.LineEditREPL(emuterm, true)
-    repl.interface = Base.REPL.setup_interface(repl)
-    repl.specialdisplay = Base.REPL.REPLDisplay(repl)
+    repl = REPL.LineEditREPL(emuterm, true)
+    repl.interface = REPL.setup_interface(repl)
+    repl.specialdisplay = REPL.REPLDisplay(repl)
     repl
 end
 

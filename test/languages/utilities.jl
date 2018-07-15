@@ -1,7 +1,7 @@
 # Taken from Tokenize.jl
-@inline iswhitespace(c::Char) = Base.UTF8proc.isspace(c)
+@inline iswhitespace(c::Char) = isspace(c)
 
-const EOF_CHAR = convert(Char,typemax(UInt32))
+const EOF_CHAR = reinterpret(Char,typemax(UInt32))
 
 function peekchar(io::(isdefined(Base, :GenericIOBuffer) ?
     Base.GenericIOBuffer : Base.AbstractIOBuffer))

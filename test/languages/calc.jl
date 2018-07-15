@@ -159,10 +159,8 @@ function Base.next(l::Lexer)
         return emit(l, ERROR)
     end
 end
-Base.start(l::Lexer) = nothing
-Base.next(l::Lexer, state) = next(l), state
-Base.done(l::Lexer, state) = eof(l.io)
-Base.iteratorsize(::Type{Lexer}) = Base.SizeUnknown()
+Base.iterate(l::Lexer, state) = eof(l.io) ? nothing : (next(l), state)
+Base.IteratorSize(::Type{Lexer}) = Base.SizeUnknown()
 
 # CST Parser
 struct CSTNode
@@ -314,7 +312,7 @@ function INSTANCE(p::Parser)
     end
     p.current_token = nt
     t_span = t.endbyte - t.startbyte
-    node = CSTNode(fullspan + t_span, span_start + (1:t_span))
+    node = CSTNode(fullspan + t_span, span_start .+ (1:t_span))
     if t.kind == INT
         return Literal(node, t.val)
     elseif t.kind == BACKREF
@@ -520,7 +518,8 @@ function DebuggerFramework.eval_code(state, s::InterpreterState, command)
     ns.valstack[end]
 end
 
-using Base: REPL, LineEdit
+using REPL
+using REPL.LineEdit
 function DebuggerFramework.language_specific_prompt(state, frame::InterpreterState)
     if haskey(state.language_modes, :calc)
         return state.language_modes[:calc]
@@ -528,8 +527,8 @@ function DebuggerFramework.language_specific_prompt(state, frame::InterpreterSta
     calc_prompt = LineEdit.Prompt(DebuggerFramework.promptname(state.level, "calc");
         # Copy colors from the prompt object
         prompt_prefix = state.repl.prompt_color,
-        prompt_suffix = (state.repl.envcolors ? Base.input_color : repl.input_color),
-        on_enter = Base.REPL.return_callback)
+        prompt_suffix = (state.repl.envcolors ? Base.input_color : state.repl.input_color),
+        on_enter = REPL.return_callback)
     calc_prompt.hist = state.main_mode.hist
     calc_prompt.hist.mode_mapping[:calc] = calc_prompt
 
@@ -541,11 +540,11 @@ function DebuggerFramework.language_specific_prompt(state, frame::InterpreterSta
         xbuf = copy(buf)
         command = String(take!(buf))
         ok, result = DebuggerFramework.eval_code(state, command)
-        Base.REPL.print_response(state.repl, ok ? result : result[1], ok ? nothing : result[2], true, true)
+        REPL.print_response(state.repl, ok ? result : result[1], ok ? nothing : result[2], true, true)
         println(state.repl.t)
         LineEdit.reset_state(s)
     end
-    calc_prompt.keymap_dict = LineEdit.keymap([Base.REPL.mode_keymap(state.main_mode);state.standard_keymap])
+    calc_prompt.keymap_dict = LineEdit.keymap([REPL.mode_keymap(state.main_mode);state.standard_keymap])
     state.language_modes[:calc] = calc_prompt
     return calc_prompt
 end
