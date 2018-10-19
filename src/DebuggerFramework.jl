@@ -149,7 +149,7 @@ module DebuggerFramework
         startoffset, stopoffset = compute_source_offsets(code, file.offsets[line], defline, line+3; file=file)
 
         if startoffset == -1
-            printstyled(io, "Line out of file range (bad debug info?)", color=:bold)
+            printstyled(IOContext(io, :color=>true), "Line out of file range (bad debug info?)", color=:bold)
             return
         end
 
@@ -167,7 +167,7 @@ module DebuggerFramework
         end
 
         for textline in code
-            printstyled(io,
+            printstyled(IOContext(io, :color=>true),
                 string(lineno, " "^(stoplinelength-length(lineno)+1));
                 color = lineno == current_line ? :yellow : :bold)
             println(io, textline)
@@ -182,7 +182,7 @@ module DebuggerFramework
     function print_status(io, state, frame)
         # Buffer to avoid flickering
         outbuf = IOBuffer()
-        printstyled(outbuf, "In ", locdesc(frame), "\n"; color=:bold)
+        printstyled(IOContext(outbuf, :color=>true), "In ", locdesc(frame), "\n"; color=:bold)
         loc = locinfo(frame)
         if loc !== nothing
             data = if isa(loc, BufferLocInfo)
@@ -200,13 +200,13 @@ module DebuggerFramework
             @assert active_line <= length(code)
             for (lineno, line) in enumerate(code)
                 if lineno == active_line
-                    printstyled(outbuf, "=> ", bold = true, color=:yellow); println(outbuf, line)
+                    printstyled(IOContext(outbuf, :color=>true), "=> ", bold = true, color=:yellow); println(outbuf, line)
                 else
-                    printstyled(outbuf, "?  ", bold = true); println(outbuf, line)
+                    printstyled(IOContext(outbuf, :color=>true), "?  ", bold = true); println(outbuf, line)
                 end
             end
         end
-        print_next_state(outbuf, state, frame)
+        print_next_state(IOContext(outbuf, :color=>true), state, frame)
         print(io, String(take!(outbuf)))
     end
 
