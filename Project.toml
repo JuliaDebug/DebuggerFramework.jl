@@ -1,0 +1,12 @@
+name = "DebuggerFramework"
+uuid = "67417a49-6d77-5db2-98c7-c13144130cd2"
+
+[deps]
+REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
+
+[extras]
+TerminalRegressionTests = "98bfdc55-cc95-5876-a49a-74609291cbe0"
+AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+
+[targets]
+test = ["TerminalRegressionTests", "AbstractTrees"]

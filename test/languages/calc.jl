@@ -135,7 +135,7 @@ function start_token!(l::Lexer)
     l.token_start_pos = position(l.io)
 end
 
-function Base.next(l::Lexer)
+function Base.popfirst!(l::Lexer)
     start_token!(l)
     c = readchar(l)
     if eof(c)
@@ -159,7 +159,7 @@ function Base.next(l::Lexer)
         return emit(l, ERROR)
     end
 end
-Base.iterate(l::Lexer, state) = eof(l.io) ? nothing : (next(l), state)
+Base.iterate(l::Lexer, state=nothing) = eof(l.io) ? nothing : (popfirst!(l),state)
 Base.IteratorSize(::Type{Lexer}) = Base.SizeUnknown()
 
 # CST Parser
@@ -256,11 +256,11 @@ end
 function Parser(io::IO)
     l = Lexer(io)
     ws = nothing
-    t = next(l)
+    t = popfirst!(l)
     if t.kind == WHITESPACE || t.kind == NEWLINE
         ws = t
         while t.kind == WHITESPACE || t.kind == NEWLINE
-            t = next(l)
+            t = popfirst!(l)
         end
     end
     return Parser(l, ws, false, t, false)
@@ -292,21 +292,21 @@ function INSTANCE(p::Parser)
     p.saw_newline = false
     span_start = fullspan
     # Gobble up whitespace
-    nt = next(p.l)
+    nt = popfirst!(p.l)
     while nt.kind == WHITESPACE
-        nt = next(p.l)
+        nt = popfirst!(p.l)
     end
     fullspan = nt.startbyte - t.endbyte
     # If the next token is a newline, add it to our trailing whitespace
     if nt.kind == NEWLINE
         p.saw_newline = true
         fullspan += 1
-        nt = next(p.l)
+        nt = popfirst!(p.l)
         # Accumulate any leading whitespace now and get us to the first non-ws token
         if nt.kind == NEWLINE || nt.kind == WHITESPACE
             p.first_leading_ws = nt
             while nt.kind == NEWLINE || nt.kind == WHITESPACE
-                nt = next(p.l)
+                nt = popfirst!(p.l)
             end
         end
     end
@@ -394,7 +394,7 @@ function enter(code::ParsedSourceCode)
         Any[],
         code,
         Any[],
-        (it, start(it),),
+        (it,),
         1
     )
 end
@@ -406,9 +406,14 @@ const op_to_func_map = Dict(
     DIV => /,
 )
 
+iterate_copy(it) = iterate(it)
+iterate_copy(it, state) = iterate(it, deepcopy(state))
+
 function _step!(s::InterpreterState)
-    it, state = s.it
-    expr, ns = next(it, deepcopy(state))
+    _step!(s, iterate_copy(s.it...)...)
+end
+
+function _step!(s::InterpreterState, expr, ns)
     if expr isa Literal
         push!(s.valstack, expr.value)
     elseif expr isa Backref
@@ -420,22 +425,22 @@ function _step!(s::InterpreterState)
     else
         error("Unrecognized expression")
     end
-    s.it = (it, ns)
+    s.it = (s.it[1], ns)
 end
 
 function step!(s::InterpreterState)
-    it, state = s.it
-    if !done(it, state)
+    y = iterate_copy(s.it...)
+    if y !== nothing
         _step!(s)
     end
     it, state = s.it
-    if done(it, state)
+    if iterate_copy(s.it...) === nothing
         if s.pc == length(s.code.parsed)
             return false
         end
         s.pc = s.pc + 1
         it = interesting_node_iterator(s.code.parsed[s.pc])
-        s.it = (it, start(it))
+        s.it = (it,)
         push!(s.backrefs, s.valstack[end])
         empty!(s.valstack)
     end
@@ -445,8 +450,7 @@ end
 # Debugger
 function skip_literals!(s::InterpreterState)
     while true
-        it, state = s.it
-        expr, ns = next(it, deepcopy(state))
+        expr, ns = iterate_copy(s.it...)
         if !(expr isa Literal || expr isa Backref)
             break
         end
@@ -463,21 +467,21 @@ end
 DebuggerFramework.locdesc(s::InterpreterState) = "statement $(s.pc)"
 function DebuggerFramework.locinfo(s::InterpreterState)
     it, state = s.it
-    pc_range = 1:(done(it, state) ? s.pc : s.pc - 1)
+    pc_range = 1:(iterate_copy(s.it...) === nothing ? s.pc : s.pc - 1)
     offset = isempty(pc_range) ? 0 : sum(i->s.code.parsed[i].n.fullspan, pc_range)
     DebuggerFramework.BufferLocInfo(s.code.text, DebuggerFramework.compute_line(
         DebuggerFramework.SourceFile(s.code.text), offset), 0, 1)
 end
 
 function DebuggerFramework.print_next_state(io::IO, state, s::InterpreterState)
-    it, state = s.it
-    if done(it, state)
+    y = iterate_copy(s.it...)
+    if y === nothing
         if s.pc == length(s.code.parsed)
             return false
         end
         expr = first(interesting_node_iterator(s.code.parsed[s.pc + 1]))
     else
-        expr, _ = next(it, deepcopy(state))
+        expr, _ = y
     end
     print(io, "About to run: ")
     if expr isa Literal

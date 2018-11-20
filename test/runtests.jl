@@ -1,6 +1,7 @@
 using DebuggerFramework
 using Test
 using REPL
+using TerminalRegressionTests
 
 include("languages/brainstack.jl")
 include("languages/calc.jl")
@@ -12,8 +13,6 @@ function setup_repl(emuterm)
     repl
 end
 
-
-include(Pkg.dir("VT100","test","TerminalRegressionTests.jl"))
 const thisdir = dirname(@__FILE__)
 
 # Test stepping in/out of frames
