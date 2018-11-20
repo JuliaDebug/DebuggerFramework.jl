@@ -5,8 +5,9 @@ uuid = "67417a49-6d77-5db2-98c7-c13144130cd2"
 REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [extras]
-TerminalRegressionTests = "98bfdc55-cc95-5876-a49a-74609291cbe0"
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+TerminalRegressionTests = "98bfdc55-cc95-5876-a49a-74609291cbe0"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["TerminalRegressionTests", "AbstractTrees"]
+test = ["TerminalRegressionTests", "AbstractTrees", "Test"]
